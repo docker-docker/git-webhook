@@ -1,2 +1,2 @@
 # git-webhook
-webhook for git 
+simple webhook for git commit action
