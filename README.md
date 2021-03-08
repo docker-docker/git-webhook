@@ -10,7 +10,7 @@ Please refer page: <https://github.com/carlos-jenkins/python-github-webhooks> fo
 
 ```shell
 
-$ docker build -f Dockerfile -t test:githook .
-$ docker run --name test -d -p 5000:5000 -v $PWD:/opt/app test:githook
+$ docker build -f Dockerfile -t seniortesting:githook .
+$ docker run --name githook -d -p 5000:5000 -v $PWD:/opt/app seniortesting:githook
 
 ```
