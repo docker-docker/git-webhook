@@ -1,0 +1,9 @@
+draft.toml
+charts/
+NOTICE
+LICENSE
+README.md
+target/
+logs/
+allure-results/
+.idea/
