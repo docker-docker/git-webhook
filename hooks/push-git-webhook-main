@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 # Put the script as following
-# cd /opt/app/
-# git pull
-# git fetch --all
-# git reset --hard origin/main
+cd /opt/git-webhook/
+git fetch --all
+git reset --hard origin/main
