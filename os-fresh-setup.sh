@@ -58,5 +58,12 @@ chmod +x /usr/local/bin/docker-compose
 echo "Docker compose installed"
 # 2.5 docker swarm
 # docker swarm init
+
+# 3. setup the git webhook
+cd /opt
+git clone https://github.com/docker-docker/git-webhook.git
+cd /opt/git-webhook
+docker build -f Dockerfile -t seniortesting:githook .
+docker run --name githook -d -p 2345:5000  -v /opt:/opt seniortesting:githook
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"

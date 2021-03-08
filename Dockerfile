@@ -8,5 +8,6 @@ VOLUME /opt
 EXPOSE 5000
 
 WORKDIR /opt/git-webhook/
+COPY requirements.txt .
 RUN pip install -r requirements.txt
 CMD ["python", "webhooks.py"]
