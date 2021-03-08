@@ -4,10 +4,9 @@ MAINTAINER "Walter Hu" <alterhu2020@gmail.com>
 ENV TIMEZONE=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && echo $TIMEZONE > /etc/timezone
 
-VOLUME /opt/app
+VOLUME /opt
 EXPOSE 5000
 
-WORKDIR /opt/app
-COPY . /opt/app
+WORKDIR /opt/git-webhook/
 RUN pip install -r requirements.txt
 CMD ["python", "webhooks.py"]
