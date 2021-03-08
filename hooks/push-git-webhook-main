@@ -1,4 +1,5 @@
 #!/bin/bash
+# this is a sample script
 set -e
 # Put the script as following
 cd /opt/git-webhook/

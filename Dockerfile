@@ -3,6 +3,8 @@ MAINTAINER "Walter Hu" <alterhu2020@gmail.com>
 
 ENV TIMEZONE=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && echo $TIMEZONE > /etc/timezone
+RUN apt update && apt-get install -y git
+
 
 VOLUME /opt
 EXPOSE 5000

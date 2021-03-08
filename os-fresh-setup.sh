@@ -65,5 +65,6 @@ git clone https://github.com/docker-docker/git-webhook.git
 cd /opt/git-webhook
 docker build -f Dockerfile -t seniortesting:githook .
 docker run --name githook -d -p 2345:5000  -v /opt:/opt seniortesting:githook
+chmod +x /opt/git-webhook/hooks/*
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
