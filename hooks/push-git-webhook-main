@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 set -e
-echo "hook me"
+# Put the script as following
 # cd /opt/app/
+# git pull
 # git fetch --all
-# git checkout -b backup-master
 # git reset --hard origin/main
