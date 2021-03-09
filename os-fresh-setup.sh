@@ -1,8 +1,13 @@
 #!/bin/sh
+#================================================
+# This is a OS fresh setup script
+# firstly, run command: git clone https://github.com/docker-docker/git-webhook.git
+#
+#================================================
 set -e
 # This is a fresh install script to setup the debian server environment
-HOSTNAME="dd_manager"
-hostnamectl set-hostname "dd_manager"
+HOSTNAME="st_manager"
+hostnamectl set-hostname "st_manager"
 echo "HostName changed to: ${HOSTNAME}"
 #================================================
 # 1. setup the host
@@ -60,11 +65,9 @@ echo "Docker compose installed"
 # docker swarm init
 
 # 3. setup the git webhook
-cd /opt
-git clone https://github.com/docker-docker/git-webhook.git
 cd /opt/git-webhook
-docker build -f Dockerfile -t seniortesting:githook .
-docker run --name githook -d -p 2345:5000  -v /opt:/opt seniortesting:githook
+docker build -f Dockerfile -t seniortesting/git-webhook:latest .
+docker run --name githook -d -p 2345:5000 -v /opt:/opt seniortesting/git-webhook:latest
 chmod +x /opt/git-webhook/hooks/*
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
