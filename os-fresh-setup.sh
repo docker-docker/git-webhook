@@ -28,8 +28,11 @@ echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ buster main contrib non-f
 
 apt-get update &&
   apt-get -y install git &&
-  apt-get -y install screen &&
-  apt-get -y install unzip
+  apt-get -y install curl &&
+  apt-get -y install wget &&
+  apt-get -y install unzip &&
+  apt-get -y install screen
+
 echo "Update the apt package mirror completed!"
 # 1.3 /etc/sysctl.conf
 echo "fs.file-max = 2147483584" >>/etc/sysctl.conf
