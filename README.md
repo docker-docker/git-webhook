@@ -12,7 +12,7 @@ A slim base version image for git webhook,borrow from: <https://github.com/carlo
 6. Install JDK, Node, Docker
 7. Configure the Docker's registry mirrors, open the tcp, docker-compose, docker-swarm
 8. Run the git webhook server background
-9. Run the nginx from docker service
+9. Run the nginx from docker service and setup the nginx
 
 ## how to use `git-webhook`
 
