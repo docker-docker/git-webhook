@@ -1,13 +1,16 @@
 #!/bin/sh
+set -e
+
 #================================================
 # This is a OS fresh setup script
 # firstly, run command: git clone https://github.com/docker-docker/git-webhook.git
 #
 #================================================
-set -e
-# This is a fresh install script to setup the debian server environment
+SSH_PORT="28379"
 HOSTNAME="st_manager"
-hostnamectl set-hostname "st_manager"
+WEBSIT_NAME="seniortesting.club"
+# This is a fresh install script to setup the debian server environment
+hostnamectl set-hostname "${HOSTNAME}"
 echo "HostName changed to: ${HOSTNAME}"
 #================================================
 # 1. setup the host
@@ -27,14 +30,12 @@ echo "TimeZone changed to ${TIMEZONE}"
 #  echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security/ buster/updates main contrib non-free" >>/etc/apt/sources.list
 
 apt-get update &&
-  apt-get -y install apt-utils &&
-  apt-get -y install git &&
-  apt-get -y install curl &&
-  apt-get -y install wget &&
-  apt-get -y install unzip &&
-  apt-get -y install screen
-
+  apt-get -y install ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends apt-utils git unzip screen certbot
+rm -rf /var/lib/apt/lists/*
 echo "Update the apt package mirror completed!"
+echo "en_US.UTF-8 UTF-8" >>/etc/locale.gen
+locale-gen en_US.UTF-8
+
 # 1.3 /etc/sysctl.conf
 echo "fs.file-max = 2147483584" >>/etc/sysctl.conf
 echo "* soft nofile 60000" >>/etc/security/limits.conf
@@ -47,7 +48,23 @@ echo "session required pam_limits.so" >>/etc/pam.d/common-session
 # after above command, run `ulimit -n` and `ulimit -Hn` to see the changes
 echo "Updated the file-max limits value"
 # 1.4 sshd configuration
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+chown -R root:root ~/.ssh
+chmod -R 700 ~/.ssh
+chmod -R 600 ~/.ssh/authorized_keys
 
+sed -i -r 's/(Port*)/#\1/g' /etc/ssh/sshd_config
+sed -i -r "/^#Port.*/a Port ${SSH_PORT}" /etc/ssh/sshd_config
+echo "RSAAuthentication yes" >>/etc/ssh/sshd_config
+echo "PubkeyAuthentication yes" >>/etc/ssh/sshd_config
+echo "AuthorizedKeysFile  .ssh/authorized_keys" >>/etc/ssh/sshd_config
+echo "PasswordAuthentication yes" >>/etc/ssh/sshd_config
+systemctl restart sshd
+echo "SSH configuration finished, please download private key file in this location: ~/.ssh/id_rsa to login "
+#================================================
+source ./software/maven.sh
+source ./software/node.sh
 # 2. install the docker
 curl -sSL https://get.docker.com/ | sh
 
@@ -65,13 +82,45 @@ echo "Docker installed, set mirror to aliyuncs, open the docker tcp connection f
 curl -L --fail https://github.com/docker/compose/releases/download/1.28.5/run.sh -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 echo "Docker compose installed"
-# 2.5 docker swarm
-# docker swarm init
-
-# 3. setup the git webhook
+# 2.2 docker swarm
+docker swarm init
+# 3. setup the git webhook in current manager machine
 cd /opt/git-webhook
-docker build -f Dockerfile -t seniortesting/git-webhook:latest .
-docker run --name githook -d -p 2345:5000 -v /opt:/opt seniortesting/git-webhook:latest
 chmod +x /opt/git-webhook/hooks/*
+pip install -r requirements.txt
+nohup python3 webhooks.py >>app.log 2>&1 &
+#================================================
+# 4 setup the nginx server quicker
+openssl dhparam -out /etc/nginx/dhparam.pem 2048
+mkdir -p /var/www/_letsencrypt
+chown www-data /var/www/_letsencrypt
+
+sed -i "s/example.com/${WEBSIT_NAME}/g" ./software/nginx/sites-enabled/example.com.conf
+sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' .software/nginx/sites-enabled/example.com.conf
+mv ./software/nginx/sites-enabled/example.com.conf ./software/nginx/sites-enabled/"$WEBSIT_NAME".conf
+# run the nginx
+docker network create --driver overlay nginx-network
+docker build -f software/nginx/Dockerfile -t custom/nginx:latest ./software/nginx/
+docker service create \
+        --network nginx-network \
+        --publish mode=host,published=80,target=80 \
+        --mount src=/etc/nginx,dst=/etc/nginx \
+        --mount src=/run/nginx.pid,dst=/run/nginx.pid \
+        --mount src=/var/log/nginx,dst=/var/log/nginx \
+        --mount src=/etc/letsencrypt,dst=/etc/letsencrypt \
+        --mount src=/var/www/_letsencrypt,dst=/var/www/_letsencrypt \
+        --mount src=/opt/workspace,dst=/opt/workspace \
+        --replicas=1 \
+        custom/nginx:latest
+
+certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
+
+sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
+docker service create --replicas=1 nginx:latest
+
+echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
+sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
+docker service create --replicas=1 nginx:latest
+#================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"

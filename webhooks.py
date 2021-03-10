@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
+import smtplib
 from sys import stderr, hexversion
 import hmac
 from json import loads, dumps
@@ -13,10 +14,10 @@ from ipaddress import ip_address, ip_network
 from flask import Flask, request, abort
 
 logging.basicConfig(stream=stderr)
-application = Flask(__name__)
+app = Flask(__name__)
 
 
-@application.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def index():
     """
     Main WSGI application entry.
@@ -79,7 +80,7 @@ def index():
     # Implement ping
     event = request.headers.get('X-GitHub-Event', 'ping')
     if event == 'ping':
-        return dumps({'msg': 'pong'})
+        return dumps({'msg': 'ping'})
 
     # Gather data
     try:
@@ -128,21 +129,21 @@ def index():
     # Skip push-delete
     if event == 'push' and payload['deleted']:
         logging.info('Skipping push-delete event for {}'.format(dumps(meta)))
-        return dumps({'status': 'skipped'})
+        return dumps({'status': 'skipped', 'msg': 'Skipping push-delete event!'})
 
     # Possible hooks
     scripts = []
     if branch and name:
-        scripts.append(join(hooks, '{event}-{name}-{branch}'.format(**meta)))
+        scripts.append(join(hooks, '{event}-{name}-{branch}.py'.format(**meta)))
     if name:
-        scripts.append(join(hooks, '{event}-{name}'.format(**meta)))
-    scripts.append(join(hooks, '{event}'.format(**meta)))
-    scripts.append(join(hooks, 'all'))
+        scripts.append(join(hooks, '{event}-{name}.py'.format(**meta)))
+    scripts.append(join(hooks, '{event}.py'.format(**meta)))
+    scripts.append(join(hooks, 'all.py'))
 
     # Check permissions
     scripts = [s for s in scripts if isfile(s) and access(s, X_OK)]
     if not scripts:
-        return dumps({'status': 'nop'})
+        return dumps({'status': 'nop', 'msg': 'hook script not found or have no access permission'})
 
     # Save payload to temporal file
     osfd, tmpfile = mkstemp()
@@ -183,5 +184,42 @@ def index():
     return output
 
 
+def send_email(smpt_server="smtp.gmail.com",
+               smpt_port=465,
+               auth_user="alterhu2020@gmail.com",
+               gmail_app_password="xxxx",
+               sender_email="alterhu2020@gmail.com",
+               receiver_list=['alterhu2020@gmail.com'],
+               subject="Git Webhook triggerred",
+               body=""):
+    try:
+        # creates SMTP session
+        smtp = smtplib.SMTP_SSL(smpt_server, smpt_port)
+        # start TLS for security
+        smtp.ehlo()
+        smtp.starttls()
+        # Authentication
+        smtp.login(auth_user, gmail_app_password)
+        # message to be sent
+        message = """
+        From: {sent_from}
+        To: {to}
+        Subject: {subject}
+        
+        {msg}
+        """.format(sent_from=sender_email,
+                   to=','.join(receiver_list),
+                   subject=subject,
+                   msg=body
+                   )
+        # sending the mail
+        smtp.sendmail(sender_email, receiver_list, message)
+        # terminating the session
+        smtp.quit()
+    except Exception as e:
+        print("Error: %s!\n\n" % e)
+
+
 if __name__ == '__main__':
-    application.run(debug=False, host='0.0.0.0')
+    # app.run(debug=False, host='0.0.0.0')
+    send_email(gmail_app_password='wqyyluzmozrktccr')
