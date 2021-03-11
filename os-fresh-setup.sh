@@ -87,6 +87,7 @@ find /usr/local -depth \
   \) -exec rm -rf '{}' +
 rm -f get-pip.py
 
+cd "${CURRENT_FOLDER}"
 pip install -r requirements.txt
 nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"
@@ -119,11 +120,12 @@ docker build -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:la
 #certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
 #
 #sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
-#docker service create --replicas=1 nginx:latest
+#docker service create --replicas=1 custom/nginx:latest
 #
+# rm -rf /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 #echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 #sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-#docker service create --replicas=1 nginx:latest
+#docker service create --replicas=1 custom/nginx:latest
 #================================================
 # 1.4 sshd configuration
 ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
