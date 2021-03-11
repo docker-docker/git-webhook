@@ -53,7 +53,8 @@ source "${CURRENT_FOLDER}/software/node.sh"
 # 2. install the docker
 curl -sSL https://get.docker.com/ | sh
 
-echo "{\n" >/etc/docker/daemon.json &&
+rm -rf /etc/docker/daemon.json
+echo "{" >/etc/docker/daemon.json &&
   echo "  \"registry-mirrors\": [\"https://jbj2tyqj.mirror.aliyuncs.com\"]" >>/etc/docker/daemon.json &&
   echo "}" >>/etc/docker/daemon.json
 
