@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #================================================
 # borrow from:
 # java: https://github.com/AdoptOpenJDK/openjdk-docker/blob/master/11/jdk/debian/Dockerfile.hotspot.releases.full
@@ -6,6 +6,7 @@
 #======================JDK==========================
 set -eux
 JAVA_VERSION="jdk-11.0.10+9"
+CURRENT_FOLDER=`pwd`
 ARCH="$(dpkg --print-architecture)"
 case "${ARCH}" in \
        aarch64|arm64) \
@@ -49,12 +50,12 @@ mkdir -p /opt/maven /opt/maven/ref \
   && echo "${SHA}  /tmp/apache-maven.tar.gz" | sha512sum -c - \
   && tar -xzf /tmp/apache-maven.tar.gz -C /opt/maven --strip-components=1 \
   && rm -f /tmp/apache-maven.tar.gz \
-  && ln -s /opt/maven/bin/mvn /usr/bin/mvn
+  && ln -f -s /opt/maven/bin/mvn /usr/bin/mvn
 
-cat "export JAVA_HOME=/opt/java/openjdk" >> /etc/profile
-cat "export JRE_HOME=\$JAVA_HOME/jre" >> /etc/profile
-cat "export MAVEN_HOME=/opt/maven" >> /etc/profile
-cat "export MAVEN_CONFIG=~/.m2" >> /etc/profile
-cat "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
-sudo source  /etc/profile
-mv settings.xml /opt/maven/ref/
+echo "export JAVA_HOME=/opt/java/openjdk" >> /etc/profile
+echo "export JRE_HOME=\$JAVA_HOME/jre" >> /etc/profile
+echo "export MAVEN_HOME=/opt/maven" >> /etc/profile
+echo "export MAVEN_CONFIG=~/.m2" >> /etc/profile
+echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
+source /etc/profile
+mv "${CURRENT_FOLDER}/settings.xml" "/opt/maven/ref/ "

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -eux
 NODE_VERSION="15.11.0"
 YARN_VERSION="1.22.5"
@@ -59,8 +59,8 @@ set -ex &&
   mkdir -p /opt &&
   tar -xzf yarn-v$YARN_VERSION.tar.gz -C /opt/ &&
   mv /opt/yarn-v$YARN_VERSION /opt/yarn &&
-  ln -s /opt/yarn/bin/yarn /usr/local/bin/yarn &&
-  ln -s /opt/yarn/bin/yarnpkg /usr/local/bin/yarnpkg &&
+  ln -f -s /opt/yarn/bin/yarn /usr/local/bin/yarn &&
+  ln -f -s /opt/yarn/bin/yarnpkg /usr/local/bin/yarnpkg &&
   rm yarn-v$YARN_VERSION.tar.gz.asc yarn-v$YARN_VERSION.tar.gz
 # smoke test
 yarn --version
