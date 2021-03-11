@@ -74,8 +74,7 @@ echo "Docker compose installed"
 # 2.2 docker swarm
 docker swarm init
 # 3. setup the git webhook in current manager machine
-cd "${CODE_WORKSPACE}"
-chmod +x "${CODE_WORKSPACE}/hooks/*"
+chmod +x "${CURRENT_FOLDER}/hooks/*"
 pip install -r requirements.txt
 nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"
