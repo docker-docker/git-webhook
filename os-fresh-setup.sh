@@ -60,6 +60,7 @@ echo "{\n" >/etc/docker/daemon.json &&
 sed -i -r 's/(ExecStart*)/#\1/g' /lib/systemd/system/docker.service
 sed -i -r '/^#ExecStart=.*/a ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375' /lib/systemd/system/docker.service
 systemctl daemon-reload
+rm -f /var/run/docker.sock
 systemctl restart docker
 echo "Docker installed, set mirror to aliyuncs, open the docker tcp connection for docker swarm!"
 
@@ -80,12 +81,12 @@ openssl dhparam -out /etc/nginx/dhparam.pem 2048
 mkdir -p /var/www/_letsencrypt
 chown www-data /var/www/_letsencrypt
 
-sed -i "s/example.com/${WEBSIT_NAME}/g" software/nginx/sites-enabled/example.com.conf
-sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' software/nginx/sites-enabled/example.com.conf
-mv software/nginx/sites-enabled/example.com.conf software/nginx/sites-enabled/"$WEBSIT_NAME".conf
+sed -i "s/example.com/${WEBSIT_NAME}/g" "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf"
+sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf"
+mv "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
 # run the nginx
 docker network create --driver overlay nginx-network
-docker build -f software/nginx/Dockerfile -t custom/nginx:latest software/nginx/
+docker build -f software/nginx/Dockerfile -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
 #docker service create \
 #        --network nginx-network \
 #        --publish mode=host,published=80,target=80 \
