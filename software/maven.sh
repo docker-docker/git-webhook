@@ -56,5 +56,5 @@ cat "export JRE_HOME=\$JAVA_HOME/jre" >> /etc/profile
 cat "export MAVEN_HOME=/opt/maven" >> /etc/profile
 cat "export MAVEN_CONFIG=~/.m2" >> /etc/profile
 cat "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
-source  /etc/profile
+sudo source  /etc/profile
 mv settings.xml /opt/maven/ref/

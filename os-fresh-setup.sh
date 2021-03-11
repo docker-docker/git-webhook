@@ -1,12 +1,12 @@
 #!/bin/sh
 set -e
-
 #================================================
 # This is a OS fresh setup script
 # firstly, run command: git clone https://github.com/docker-docker/git-webhook.git
 #
 #================================================
 SSH_PORT="28379"
+SSH_PASS="changeit"
 HOSTNAME="st_manager"
 WEBSIT_NAME="seniortesting.club"
 # This is a fresh install script to setup the debian server environment
@@ -47,24 +47,8 @@ echo "root hard nofile 60000" >>/etc/security/limits.conf
 echo "session required pam_limits.so" >>/etc/pam.d/common-session
 # after above command, run `ulimit -n` and `ulimit -Hn` to see the changes
 echo "Updated the file-max limits value"
-# 1.4 sshd configuration
-ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
-cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
-chown -R root:root ~/.ssh
-chmod -R 700 ~/.ssh
-chmod -R 600 ~/.ssh/authorized_keys
-
-sed -i -r 's/(Port*)/#\1/g' /etc/ssh/sshd_config
-sed -i -r "/^#Port.*/a Port ${SSH_PORT}" /etc/ssh/sshd_config
-echo "RSAAuthentication yes" >>/etc/ssh/sshd_config
-echo "PubkeyAuthentication yes" >>/etc/ssh/sshd_config
-echo "AuthorizedKeysFile  .ssh/authorized_keys" >>/etc/ssh/sshd_config
-echo "PasswordAuthentication yes" >>/etc/ssh/sshd_config
-systemctl restart sshd
-echo "SSH configuration finished, please download private key file in this location: ~/.ssh/id_rsa to login "
-#================================================
-source ./software/maven.sh
-source ./software/node.sh
+source software/maven.sh
+source software/node.sh
 # 2. install the docker
 curl -sSL https://get.docker.com/ | sh
 
@@ -95,32 +79,47 @@ openssl dhparam -out /etc/nginx/dhparam.pem 2048
 mkdir -p /var/www/_letsencrypt
 chown www-data /var/www/_letsencrypt
 
-sed -i "s/example.com/${WEBSIT_NAME}/g" ./software/nginx/sites-enabled/example.com.conf
-sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' .software/nginx/sites-enabled/example.com.conf
-mv ./software/nginx/sites-enabled/example.com.conf ./software/nginx/sites-enabled/"$WEBSIT_NAME".conf
+sed -i "s/example.com/${WEBSIT_NAME}/g" software/nginx/sites-enabled/example.com.conf
+sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' software/nginx/sites-enabled/example.com.conf
+mv software/nginx/sites-enabled/example.com.conf software/nginx/sites-enabled/"$WEBSIT_NAME".conf
 # run the nginx
 docker network create --driver overlay nginx-network
-docker build -f software/nginx/Dockerfile -t custom/nginx:latest ./software/nginx/
-docker service create \
-        --network nginx-network \
-        --publish mode=host,published=80,target=80 \
-        --mount src=/etc/nginx,dst=/etc/nginx \
-        --mount src=/run/nginx.pid,dst=/run/nginx.pid \
-        --mount src=/var/log/nginx,dst=/var/log/nginx \
-        --mount src=/etc/letsencrypt,dst=/etc/letsencrypt \
-        --mount src=/var/www/_letsencrypt,dst=/var/www/_letsencrypt \
-        --mount src=/opt/workspace,dst=/opt/workspace \
-        --replicas=1 \
-        custom/nginx:latest
+docker build -f software/nginx/Dockerfile -t custom/nginx:latest software/nginx/
+#docker service create \
+#        --network nginx-network \
+#        --publish mode=host,published=80,target=80 \
+#        --mount src=/etc/nginx,dst=/etc/nginx \
+#        --mount src=/run/nginx.pid,dst=/run/nginx.pid \
+#        --mount src=/var/log/nginx,dst=/var/log/nginx \
+#        --mount src=/etc/letsencrypt,dst=/etc/letsencrypt \
+#        --mount src=/var/www/_letsencrypt,dst=/var/www/_letsencrypt \
+#        --mount src=/opt/workspace,dst=/opt/workspace \
+#        --replicas=1 \
+#        custom/nginx:latest
+#
+#certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
+#
+#sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
+#docker service create --replicas=1 nginx:latest
+#
+#echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
+#sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
+#docker service create --replicas=1 nginx:latest
+#================================================
+# 1.4 sshd configuration
+ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+chown -R root:root ~/.ssh
+chmod -R 700 ~/.ssh
+chmod -R 600 ~/.ssh/authorized_keys
 
-certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
-
-sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
-docker service create --replicas=1 nginx:latest
-
-echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-docker service create --replicas=1 nginx:latest
+sed -i -r 's/(Port*)/#\1/g' /etc/ssh/sshd_config
+sed -i -r "/^#Port.*/a Port ${SSH_PORT}" /etc/ssh/sshd_config
+echo "RSAAuthentication yes" >>/etc/ssh/sshd_config
+echo "PubkeyAuthentication yes" >>/etc/ssh/sshd_config
+echo "AuthorizedKeysFile .ssh/authorized_keys" >>/etc/ssh/sshd_config
+echo "PasswordAuthentication yes" >>/etc/ssh/sshd_config
+echo "SSH configuration finished, please download private key file in this location: ~/.ssh/id_rsa to login "
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"

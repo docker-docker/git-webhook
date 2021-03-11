@@ -21,8 +21,9 @@ Please refer page: <https://github.com/carlos-jenkins/python-github-webhooks> fo
 Run as following script:
 
 ```shell
+$ mkdir -p /opt/workspace
 $ cd /opt/workspace
-$ git clone 
+$ git clone https://github.com/docker-docker/git-webhook.git
 $ cd git-webhook
 $ chmod +x os-fresh-setup.sh software/* hooks/*
 $ ./os-fresh-setup.sh
