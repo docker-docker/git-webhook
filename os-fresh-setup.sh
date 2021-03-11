@@ -11,11 +11,10 @@ HOSTNAME="st_manager"
 WEBSIT_NAME="seniortesting.club"
 CURRENT_FOLDER=$(pwd)
 CODE_WORKSPACE="/opt/workspace"
-# This is a fresh install script to setup the debian server environment
-hostnamectl set-hostname "${HOSTNAME}"
-echo "HostName changed to: ${HOSTNAME}"
 #================================================
 # 1. setup the host
+hostnamectl set-hostname "${HOSTNAME}"
+echo "HostName changed to: ${HOSTNAME}"
 # 1.1 host name
 TIMEZONE="Asia/Shanghai"
 ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && echo $TIMEZONE >/etc/timezone
@@ -51,6 +50,7 @@ echo "session required pam_limits.so" >>/etc/pam.d/common-session
 echo "Updated the file-max limits value"
 source "${CURRENT_FOLDER}/software/maven.sh"
 source "${CURRENT_FOLDER}/software/node.sh"
+#================================================
 # 2. setup the git webhook in current manager machine
 wget -O get-pip.py https://github.com/pypa/get-pip/raw/b60e2320d9e8d02348525bd74e871e466afdf77c/get-pip.py
 python3 get-pip.py \
@@ -69,7 +69,23 @@ cd "${CURRENT_FOLDER}"
 pip install -r requirements.txt
 nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"
-# 3. install the docker
+#================================================
+# 3. sshd configuration
+ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
+chown -R root:root ~/.ssh
+chmod -R 700 ~/.ssh
+chmod -R 600 ~/.ssh/authorized_keys
+
+sed -i -r 's/(Port*)/#\1/g' /etc/ssh/sshd_config
+sed -i -r "/^#Port.*/a Port ${SSH_PORT}" /etc/ssh/sshd_config
+echo "RSAAuthentication yes" >>/etc/ssh/sshd_config
+echo "PubkeyAuthentication yes" >>/etc/ssh/sshd_config
+echo "AuthorizedKeysFile .ssh/authorized_keys" >>/etc/ssh/sshd_config
+echo "PasswordAuthentication yes" >>/etc/ssh/sshd_config
+echo "SSH configuration finished, please download private key file in this location: ~/.ssh/id_rsa to login "
+#================================================
+# 4. install the docker
 curl -sSL https://get.docker.com/ | sh
 
 rm -rf /etc/docker/daemon.json
@@ -85,14 +101,14 @@ systemctl restart docker
 echo "Docker installed, set mirror to aliyuncs, open the docker tcp connection for docker swarm!"
 usermod -aG docker root
 
-# 3.1 docker-compose
+# 4.1 docker-compose
 curl -L --fail https://github.com/docker/compose/releases/download/1.28.5/run.sh -o /usr/local/bin/docker-compose
 chmod +x /usr/local/bin/docker-compose
 echo "Docker compose installed"
-# 3.2 docker swarm
+# 4.2 docker swarm
 docker swarm init
 #================================================
-# 4 setup the nginx server quickly
+# 5. setup the nginx server quickly
 docker pull nginx:latest
 mkdir -p /opt/nginx
 openssl dhparam -out /etc/nginx/dhparam.pem 2048
@@ -126,21 +142,6 @@ docker build -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:la
 #echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 #sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 #docker service create --replicas=1 custom/nginx:latest
-#================================================
-# 5. sshd configuration
-ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
-cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
-chown -R root:root ~/.ssh
-chmod -R 700 ~/.ssh
-chmod -R 600 ~/.ssh/authorized_keys
-
-sed -i -r 's/(Port*)/#\1/g' /etc/ssh/sshd_config
-sed -i -r "/^#Port.*/a Port ${SSH_PORT}" /etc/ssh/sshd_config
-echo "RSAAuthentication yes" >>/etc/ssh/sshd_config
-echo "PubkeyAuthentication yes" >>/etc/ssh/sshd_config
-echo "AuthorizedKeysFile .ssh/authorized_keys" >>/etc/ssh/sshd_config
-echo "PasswordAuthentication yes" >>/etc/ssh/sshd_config
-echo "SSH configuration finished, please download private key file in this location: ~/.ssh/id_rsa to login "
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
