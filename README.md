@@ -28,4 +28,13 @@ $ git clone https://github.com/docker-docker/git-webhook.git
 $ cd git-webhook
 $ chmod +x os-fresh-setup.sh software/* hooks/*
 $ ./os-fresh-setup.sh
+
+$ git fetch --all
+$ git reset --hard origin/main
+```
+## renew nginx new domain name
+
+```shell
+
+
 ```

@@ -9,7 +9,8 @@ SSH_PORT="28379"
 SSH_PASS="changeit"
 HOSTNAME="st_manager"
 WEBSIT_NAME="seniortesting.club"
-CURRENT_FOLDER=`pwd`
+CURRENT_FOLDER=$(pwd)
+CODE_WORKSPACE="/opt/workspace"
 # This is a fresh install script to setup the debian server environment
 hostnamectl set-hostname "${HOSTNAME}"
 echo "HostName changed to: ${HOSTNAME}"
@@ -54,6 +55,7 @@ source "${CURRENT_FOLDER}/software/node.sh"
 curl -sSL https://get.docker.com/ | sh
 
 rm -rf /etc/docker/daemon.json
+rm -f /var/run/docker.sock
 echo "{" >/etc/docker/daemon.json &&
   echo "  \"registry-mirrors\": [\"https://jbj2tyqj.mirror.aliyuncs.com\"]" >>/etc/docker/daemon.json &&
   echo "}" >>/etc/docker/daemon.json
@@ -61,9 +63,9 @@ echo "{" >/etc/docker/daemon.json &&
 sed -i -r 's/(ExecStart*)/#\1/g' /lib/systemd/system/docker.service
 sed -i -r '/^#ExecStart=.*/a ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375' /lib/systemd/system/docker.service
 systemctl daemon-reload
-rm -f /var/run/docker.sock
 systemctl restart docker
 echo "Docker installed, set mirror to aliyuncs, open the docker tcp connection for docker swarm!"
+usermod -aG docker root
 
 # 2.1 docker-compose
 curl -L --fail https://github.com/docker/compose/releases/download/1.28.5/run.sh -o /usr/local/bin/docker-compose
@@ -72,12 +74,15 @@ echo "Docker compose installed"
 # 2.2 docker swarm
 docker swarm init
 # 3. setup the git webhook in current manager machine
-cd /opt/git-webhook
-chmod +x /opt/git-webhook/hooks/*
+cd "${CODE_WORKSPACE}"
+chmod +x "${CODE_WORKSPACE}/hooks/*"
 pip install -r requirements.txt
 nohup python3 webhooks.py >>app.log 2>&1 &
+echo "git webhook setup completed!"
 #================================================
 # 4 setup the nginx server quicker
+docker pull nginx:latest
+mkdir -p /opt/nginx
 openssl dhparam -out /etc/nginx/dhparam.pem 2048
 mkdir -p /var/www/_letsencrypt
 chown www-data /var/www/_letsencrypt
@@ -87,7 +92,7 @@ sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_
 mv "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
 # run the nginx
 docker network create --driver overlay nginx-network
-docker build -f software/nginx/Dockerfile -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
+docker build -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
 #docker service create \
 #        --network nginx-network \
 #        --publish mode=host,published=80,target=80 \
