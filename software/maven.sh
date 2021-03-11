@@ -58,4 +58,4 @@ echo "export MAVEN_HOME=/opt/maven" >> /etc/profile
 echo "export MAVEN_CONFIG=~/.m2" >> /etc/profile
 echo "export PATH=\$JAVA_HOME/bin:\$PATH" >> /etc/profile
 source /etc/profile
-mv "${CURRENT_FOLDER}/settings.xml" "/opt/maven/ref/ "
+mv "${CURRENT_FOLDER}/software/settings.xml" /opt/maven/ref/
