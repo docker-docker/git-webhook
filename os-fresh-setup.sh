@@ -9,6 +9,7 @@ SSH_PORT="28379"
 SSH_PASS="changeit"
 HOSTNAME="st_manager"
 WEBSIT_NAME="seniortesting.club"
+CURRENT_FOLDER=`pwd`
 # This is a fresh install script to setup the debian server environment
 hostnamectl set-hostname "${HOSTNAME}"
 echo "HostName changed to: ${HOSTNAME}"
@@ -47,8 +48,8 @@ echo "root hard nofile 60000" >>/etc/security/limits.conf
 echo "session required pam_limits.so" >>/etc/pam.d/common-session
 # after above command, run `ulimit -n` and `ulimit -Hn` to see the changes
 echo "Updated the file-max limits value"
-source software/maven.sh
-source software/node.sh
+source "${CURRENT_FOLDER}/software/maven.sh"
+source "${CURRENT_FOLDER}/software/node.sh"
 # 2. install the docker
 curl -sSL https://get.docker.com/ | sh
 
