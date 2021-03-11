@@ -74,7 +74,19 @@ echo "Docker compose installed"
 # 2.2 docker swarm
 docker swarm init
 # 3. setup the git webhook in current manager machine
-chmod +x "${CURRENT_FOLDER}/hooks/*"
+wget -O get-pip.py https://github.com/pypa/get-pip/raw/b60e2320d9e8d02348525bd74e871e466afdf77c/get-pip.py
+python3 get-pip.py \
+  --disable-pip-version-check \
+  --no-cache-dir
+pip --version
+find /usr/local -depth \
+  \( \
+  \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+  -o \
+  \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+  \) -exec rm -rf '{}' +
+rm -f get-pip.py
+
 pip install -r requirements.txt
 nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"
