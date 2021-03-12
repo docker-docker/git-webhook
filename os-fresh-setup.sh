@@ -120,8 +120,9 @@ sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_
 mv "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
 # run the nginx
 docker network create --driver overlay nginx-network
-docker build -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
+docker build -f --no-cache "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
 docker service create \
+        --name nginx \
         --network nginx-network \
         --publish mode=host,published=80,target=80 \
         --mount src=/etc/nginx,dst=/etc/nginx,type=bind \
@@ -129,19 +130,22 @@ docker service create \
         --mount src=/var/log/nginx,dst=/var/log/nginx,type=bind \
         --mount src=/etc/letsencrypt,dst=/etc/letsencrypt,type=bind \
         --mount src=/var/www/_letsencrypt,dst=/var/www/_letsencrypt,type=bind \
-        --mount src=/opt/workspace,dst=/opt/workspace,type=bind \
+        --mount src=/opt/workspace,dst=/usr/share/nginx/html,type=bind \
         --replicas=1 \
         custom/nginx:latest
 
 certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
 
 sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
-docker service create --replicas=1 custom/nginx:latest
-
+docker service update \
+       --force \
+       nginx
 rm -rf /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-docker service create --replicas=1 custom/nginx:latest
+docker service update \
+       --force \
+       nginx
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
