@@ -95,7 +95,7 @@ echo "{" >/etc/docker/daemon.json &&
   echo "}" >>/etc/docker/daemon.json
 
 sed -i -r 's/(ExecStart*)/#\1/g' /lib/systemd/system/docker.service
-sed -i -r '/^#ExecStart=.*/a ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375' /lib/systemd/system/docker.service
+sed -i -r '/^#ExecStart=.*/a ExecStart=/usr/bin/dockerd -H unix:///var/run/docker.sock -H tcp://0.0.0.0:2857' /lib/systemd/system/docker.service
 systemctl daemon-reload
 systemctl restart docker
 echo "Docker installed, set mirror to aliyuncs, open the docker tcp connection for docker swarm!"
