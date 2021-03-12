@@ -109,18 +109,20 @@ echo "Docker compose installed"
 docker swarm init
 #================================================
 # 5. setup the nginx server quickly
-docker pull nginx:latest
-mkdir -p /opt/nginx
+mkdir -p /etc/nginx
 openssl dhparam -out /etc/nginx/dhparam.pem 2048
 mkdir -p /var/www/_letsencrypt
 chown www-data /var/www/_letsencrypt
 
-sed -i "s/example.com/${WEBSIT_NAME}/g" "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf"
-sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf"
-mv "${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
+FILE="${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf"
+if [ -f "$FILE" ]; then
+  sed -i "s/example.com/${WEBSIT_NAME}/g" "${FILE}"
+  sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${FILE}"
+  mv "${FILE}" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
+fi
 # run the nginx
 docker network create --driver overlay nginx-network
-docker build -f --no-cache "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
+docker build --no-cache -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
 docker service create \
         --name nginx \
         --network nginx-network \

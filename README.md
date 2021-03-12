@@ -21,7 +21,7 @@ Please refer page: <https://github.com/carlos-jenkins/python-github-webhooks> fo
 Run as following script:
 
 ```shell
-$ sudo apt install git
+$ apt install -y git
 $ mkdir -p /opt/workspace
 $ cd /opt/workspace
 $ git clone https://github.com/docker-docker/git-webhook.git
