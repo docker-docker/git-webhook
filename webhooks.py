@@ -195,7 +195,7 @@ def send_email(smtp_server="smtp.gmail.com",
            sender="alterhu2020@gmail.com",
            recipients=['alterhu2020@gmail.com'],
            subject="Git Webhook triggerred",
-           body=""):
+           body="Hello World!"):
     try:
         port_list = (25, 587, 465)
         if smtp_port not in port_list:
