@@ -106,7 +106,7 @@ curl -L --fail https://github.com/docker/compose/releases/download/1.28.5/run.sh
 chmod +x /usr/local/bin/docker-compose
 echo "Docker compose installed"
 # 4.2 docker swarm
-docker swarm init
+#docker swarm init
 #================================================
 # 5. setup the nginx server quickly
 mkdir -p /etc/nginx
@@ -121,33 +121,50 @@ if [ -f "$FILE" ]; then
   mv "${FILE}" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
 fi
 # run the nginx
-docker network create --driver overlay nginx-network
+#docker network create --driver overlay nginx-network
 docker build --no-cache -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
-docker service create \
-        --name nginx \
-        --network nginx-network \
-        --publish mode=host,published=80,target=80 \
-        --mount src=/etc/nginx,dst=/etc/nginx,type=bind \
-        --mount src=/run/nginx.pid,dst=/run/nginx.pid,type=bind \
-        --mount src=/var/log/nginx,dst=/var/log/nginx,type=bind \
-        --mount src=/etc/letsencrypt,dst=/etc/letsencrypt,type=bind \
-        --mount src=/var/www/_letsencrypt,dst=/var/www/_letsencrypt,type=bind \
-        --mount src=/opt/workspace,dst=/usr/share/nginx/html,type=bind \
-        --replicas=1 \
-        custom/nginx:latest
+mv "${CURRENT_FOLDER}/software/nginx/*" /opt/nginx/
+docker run \
+  --name nginx \
+  --publish 80:80 \
+  --volume /etc/nginx:/etc/nginx \
+  --volume /run/nginx.pid:/run/nginx.pid \
+  --volume /var/log/nginx:/var/log/nginx \
+  --volume /etc/letsencrypt:/etc/letsencrypt \
+  --volume /var/www/_letsencrypt:/var/www/_letsencrypt \
+  --volume /opt/workspace:/usr/share/nginx/html \
+  custom/nginx:latest
 
 certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
 
 sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
-docker service update \
-       --force \
-       nginx
+docker rm -f nginx
+docker run \
+  --name nginx \
+  --publish 80:80 \
+  --volume /etc/nginx:/etc/nginx \
+  --volume /run/nginx.pid:/run/nginx.pid \
+  --volume /var/log/nginx:/var/log/nginx \
+  --volume /etc/letsencrypt:/etc/letsencrypt \
+  --volume /var/www/_letsencrypt:/var/www/_letsencrypt \
+  --volume /opt/workspace:/usr/share/nginx/html \
+  custom/nginx:latest
+
 rm -rf /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-docker service update \
-       --force \
-       nginx
+docker rm -f nginx
+docker run \
+  -d \
+  --name nginx \
+  --publish 80:80 \
+  --volume /etc/nginx:/etc/nginx \
+  --volume /run/nginx.pid:/run/nginx.pid \
+  --volume /var/log/nginx:/var/log/nginx \
+  --volume /etc/letsencrypt:/etc/letsencrypt \
+  --volume /var/www/_letsencrypt:/var/www/_letsencrypt \
+  --volume /opt/workspace:/usr/share/nginx/html \
+  custom/nginx:latest
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
