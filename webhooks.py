@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 import logging
 import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from sys import stderr, hexversion
 import hmac
 from json import loads, dumps
@@ -134,7 +137,8 @@ def index():
     # Possible hooks
     scripts = []
     if branch and name:
-        scripts.append(join(hooks, '{event}-{name}-{branch}.py'.format(**meta)))
+        scripts.append(
+            join(hooks, '{event}-{name}-{branch}.py'.format(**meta)))
     if name:
         scripts.append(join(hooks, '{event}-{name}.py'.format(**meta)))
     scripts.append(join(hooks, '{event}.py'.format(**meta)))
@@ -184,42 +188,48 @@ def index():
     return output
 
 
-def send_email(smpt_server="smtp.gmail.com",
-               smpt_port=465,
-               auth_user="alterhu2020@gmail.com",
-               gmail_app_password="xxxx",
-               sender_email="alterhu2020@gmail.com",
-               receiver_list=['alterhu2020@gmail.com'],
-               subject="Git Webhook triggerred",
-               body=""):
+def send_email(smtp_server="smtp.gmail.com",
+           smtp_port=465,
+           auth_user="alterhu2020@gmail.com",
+           gmail_app_password="xxxx",
+           er="alterhu2020@gmail.com",
+           recipients=['alterhu2020@gmail.com'],
+           subject="Git Webhook triggerred",
+           body=""):
     try:
+        port_list = (25, 587, 465)
+        if smtp_port not in port_list:
+            raise Exception("Port %s not one of %s" % (smtp_port, port_list))
+
+        receiver = recipients if isinstance(
+            recipients, (list, tuple)) else [recipients]
+        message = MIMEMultipart("alternative")
+        message["Subject"] = subject
+        message["From"] = er
+        message["To"] = ",".join(receiver)
+
+        message_part = MIMEText(body, "plain")
+        message.attach(message_part)
+
         # creates SMTP session
-        smtp = smtplib.SMTP_SSL(smpt_server, smpt_port)
-        # start TLS for security
-        smtp.ehlo()
-        smtp.starttls()
-        # Authentication
-        smtp.login(auth_user, gmail_app_password)
-        # message to be sent
-        message = """
-        From: {sent_from}
-        To: {to}
-        Subject: {subject}
-        
-        {msg}
-        """.format(sent_from=sender_email,
-                   to=','.join(receiver_list),
-                   subject=subject,
-                   msg=body
-                   )
-        # sending the mail
-        smtp.sendmail(sender_email, receiver_list, message)
-        # terminating the session
-        smtp.quit()
+        context = ssl.create_default_context()
+        if smtp_port in (465,):
+            smtp_server = smtplib.SMTP_SSL(
+                smtp_server, smtp_port, context=context)
+        else:
+            smtp_server = smtplib.SMTP(smtp_server, smtp_port)
+        with smtp_server as server:
+            # start TLS for security, remove this line
+            if smtp_port in (587,):
+                server.starttls(context=context)
+            # Authentication
+            server.login(auth_user, gmail_app_password)
+            # ing the mail
+            server.mail(er, receiver, message.as_string())
     except Exception as e:
         print("Error: %s!\n\n" % e)
 
 
 if __name__ == '__main__':
-    # app.run(debug=False, host='0.0.0.0')
-    send_email(gmail_app_password='wqyyluzmozrktccr')
+    app.run(debug=False, host='0.0.0.0')
+    # send_email(gmail_app_password='wqyyluzmozrktccr')
