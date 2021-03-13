@@ -123,7 +123,7 @@ fi
 # run the nginx
 #docker network create --driver overlay nginx-network
 docker build --no-cache -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
-mv "${CURRENT_FOLDER}/software/nginx/*" /opt/nginx/
+mv $CURRENT_FOLDER/software/nginx/* /etc/nginx/
 docker run \
   --name nginx \
   --publish 80:80 \
