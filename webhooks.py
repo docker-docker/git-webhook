@@ -192,7 +192,7 @@ def send_email(smtp_server="smtp.gmail.com",
            smtp_port=465,
            auth_user="alterhu2020@gmail.com",
            gmail_app_password="xxxx",
-           er="alterhu2020@gmail.com",
+           sender="alterhu2020@gmail.com",
            recipients=['alterhu2020@gmail.com'],
            subject="Git Webhook triggerred",
            body=""):
@@ -205,7 +205,7 @@ def send_email(smtp_server="smtp.gmail.com",
             recipients, (list, tuple)) else [recipients]
         message = MIMEMultipart("alternative")
         message["Subject"] = subject
-        message["From"] = er
+        message["From"] = sender
         message["To"] = ",".join(receiver)
 
         message_part = MIMEText(body, "plain")
@@ -225,7 +225,7 @@ def send_email(smtp_server="smtp.gmail.com",
             # Authentication
             server.login(auth_user, gmail_app_password)
             # ing the mail
-            server.mail(er, receiver, message.as_string())
+            server.sendmail(sender, receiver, message.as_string())
     except Exception as e:
         print("Error: %s!\n\n" % e)
 
