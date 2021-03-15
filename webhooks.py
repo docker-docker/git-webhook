@@ -88,7 +88,7 @@ def index():
     # Gather data
     try:
         payload = request.get_json()
-    except Exception:
+    except Exception as e:
         logging.warning('Request parsing failed')
         abort(400)
 
@@ -150,8 +150,8 @@ def index():
         return dumps({'status': 'nop', 'msg': 'hook script not found or have no access permission'})
 
     # Save payload to temporal file
-    osfd, tmpfile = mkstemp()
-    with fdopen(osfd, 'w') as pf:
+    os_fd, tmp_file = mkstemp()
+    with fdopen(os_fd, 'w') as pf:
         pf.write(dumps(payload))
 
     # Run scripts
@@ -159,7 +159,7 @@ def index():
     for s in scripts:
 
         proc = Popen(
-            [s, tmpfile, event],
+            [s, tmp_file, event],
             stdout=PIPE, stderr=PIPE
         )
         stdout, stderr = proc.communicate()
@@ -177,7 +177,7 @@ def index():
             ))
 
     # Remove temporal file
-    remove(tmpfile)
+    remove(tmp_file)
 
     info = config.get('return_scripts_info', False)
     if not info:
@@ -189,13 +189,13 @@ def index():
 
 
 def send_email(smtp_server="smtp.gmail.com",
-           smtp_port=465,
-           auth_user="alterhu2020@gmail.com",
-           gmail_app_password="xxxx",
-           sender="alterhu2020@gmail.com",
-           recipients=['alterhu2020@gmail.com'],
-           subject="Git Webhook triggerred",
-           body="Hello World!"):
+               smtp_port=465,
+               auth_user="alterhu2020@gmail.com",
+               gmail_app_password="xxxx",
+               sender="alterhu2020@gmail.com",
+               recipients=['alterhu2020@gmail.com'],
+               subject="Git Webhook triggerred",
+               body="Hello World!"):
     try:
         port_list = (25, 587, 465)
         if smtp_port not in port_list:
