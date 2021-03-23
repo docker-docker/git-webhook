@@ -161,7 +161,7 @@ def index():
     for s in scripts:
 
         proc = Popen(
-            [s, tmp_file, event],
+            [s, tmp_file, branch, event],
             stdout=PIPE, stderr=PIPE
         )
         stdout, stderr = proc.communicate()

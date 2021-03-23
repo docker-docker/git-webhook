@@ -9,10 +9,9 @@ import subprocess
 sourcecode_root_location = "/opt/workspace"
 # Parse the git event parameter
 current_file_name = sys.argv[0]
-branch_name = os.path.splitext(current_file_name)[0].split('-')[-1]
 tmp_payload_file = sys.argv[1]
-event = sys.argv[2]
-print(f'file_name: {current_file_name}, branch: {branch_name}, event: {event}')
+branch_name = sys.argv[2]
+event = sys.argv[3]
 # Parse the git event payload
 with open(tmp_payload_file, 'r') as jsf:
     payload = json.loads(jsf.read())
@@ -20,6 +19,7 @@ name = payload['repository']['name']
 git_url = payload['repository']['git_url']
 pusher_name = payload['pusher']['name']
 pusher_email = payload['pusher']['email']
+print(f'file_name: {current_file_name}, branch: {branch_name}, event: {event}')
 # Git pull the latest code repository
 code_location = os.path.join(sourcecode_root_location, name)
 if os.path.exists(code_location):
