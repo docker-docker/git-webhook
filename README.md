@@ -31,6 +31,7 @@ $ ./os-fresh-setup.sh
 
 $ git fetch --all
 $ git reset --hard origin/main
+$ chmod +x os-fresh-setup.sh software/* hooks/*
 ```
 ## renew nginx new domain name
 

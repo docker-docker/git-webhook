@@ -27,8 +27,10 @@ if os.path.exists(code_location):
     os.chdir(code_location)
     subprocess.run(['git', 'fetch', '--all'], capture_output=True)
     subprocess.run(['git', 'reset', '--hard', f'origin/{branch_name}'], capture_output=True)
+    print(f'git fetch -all completed successfully')
 else:
     os.makedirs(sourcecode_root_location, exist_ok=True)
     os.chdir(sourcecode_root_location)
     subprocess.run(['git', 'clone', '-b', branch_name, git_url], capture_output=True)
+    print(f'git clone -b {branch_name} {git_url} completed successfully')
 # send the email notification
