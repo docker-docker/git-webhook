@@ -43,6 +43,8 @@ wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && tar zxf nginx-$
 cd ${NGINX_FOLDER}
 sed -i -r "s/Server: nginx/Server: ${NGINX_SERVER_NAME}/" nginx-${NGINX_VERSION}/src/http/ngx_http_header_filter_module.c
 sed -i -r "s/Server: \"/Server: ${NGINX_SERVER_NAME}\"/" nginx-${NGINX_VERSION}/src/http/ngx_http_header_filter_module.c
+sed -i 's@r->headers_out.server == NULL@0@g' nginx-${NGINX_VERSION}/src/http/ngx_http_header_filter_module.c
+sed -i 's@r->headers_out.server == NULL@0@g' nginx-${NGINX_VERSION}/src/http/v2/ngx_http_v2_filter_module.c
 sed -i -r "s/nginx\//${NGINX_SERVER_NAME}\//" nginx-${NGINX_VERSION}/src/core/nginx.h
 sed -i -r "s/<hr><center>nginx<\/center>/<hr><center>${NGINX_SERVER_NAME}<\/center>/" nginx-${NGINX_VERSION}/src/http/ngx_http_special_response.c
 # build the source
