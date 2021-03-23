@@ -39,7 +39,7 @@ git clone https://github.com/google/ngx_brotli && cd ngx_brotli && git submodule
 cd ${NGINX_FOLDER}
 wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && tar zxf nginx-${NGINX_VERSION}.tar.gz
 # modify nginx default settings
-cd nginx-${NGINX_VERSION}
+cd ${NGINX_FOLDER}
 sed -i -r "s/Server: nginx/Server: ${NGINX_SERVER_NAME}/" nginx-${NGINX_VERSION}/src/http/ngx_http_header_filter_module.c
 sed -i -r "s/nginx\//${NGINX_SERVER_NAME}\//" nginx-${NGINX_VERSION}/src/core/nginx.h
 sed -i -r "s/<hr><center>nginx<\/center>/<hr><center>${NGINX_SERVER_NAME}<\/center>/" nginx-${NGINX_VERSION}/src/http/ngx_http_special_response.c
