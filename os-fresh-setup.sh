@@ -7,14 +7,18 @@ set -e
 #================================================
 SSH_PORT="28379"
 SSH_PASS="changeit"
-HOSTNAME="st_manager"
+HOST_NAME="st_manager"
 WEBSIT_NAME="seniortesting.club"
 CURRENT_FOLDER=$(pwd)
 CODE_WORKSPACE="/opt/workspace"
 #================================================
-# 1. setup the host
-hostnamectl set-hostname "${HOSTNAME}"
-echo "HostName changed to: ${HOSTNAME}"
+su -
+apt-get install sudo -y
+usermod -aG sudo root
+# 1. setup the host /etc/hostname , etc/hosts
+hostnamectl set-hostname "${HOST_NAME}"
+echo "HostName changed to: ${HOST_NAME}"
+echo "127.0.0.1 ${HOST_NAME}" >>/etc/hosts
 # 1.1 host name
 TIMEZONE="Asia/Shanghai"
 ln -snf /usr/share/zoneinfo/$TIMEZONE /etc/localtime && echo $TIMEZONE >/etc/timezone
@@ -109,62 +113,7 @@ echo "Docker compose installed"
 #docker swarm init
 #================================================
 # 5. setup the nginx server quickly
-mkdir -p /etc/nginx
-openssl dhparam -out /etc/nginx/dhparam.pem 2048
-mkdir -p /var/www/_letsencrypt
-chown www-data /var/www/_letsencrypt
-
-FILE="${CURRENT_FOLDER}/software/nginx/sites-enabled/example.com.conf"
-if [ -f "$FILE" ]; then
-  sed -i "s/example.com/${WEBSIT_NAME}/g" "${FILE}"
-  sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${FILE}"
-  mv "${FILE}" "${CURRENT_FOLDER}/software/nginx/sites-enabled/${WEBSIT_NAME}.conf"
-fi
-# run the nginx
-#docker network create --driver overlay nginx-network
-docker build --no-cache -f "${CURRENT_FOLDER}/software/nginx/Dockerfile" -t custom/nginx:latest "${CURRENT_FOLDER}/software/nginx/"
-mv -f $CURRENT_FOLDER/software/nginx/* /etc/nginx/
-docker run \
-  --name nginx \
-  --publish 80:80 \
-  --volume /etc/nginx:/etc/nginx \
-  --volume /run/nginx.pid:/run/nginx.pid \
-  --volume /var/log/nginx:/var/log/nginx \
-  --volume /etc/letsencrypt:/etc/letsencrypt \
-  --volume /var/www/_letsencrypt:/var/www/_letsencrypt \
-  --volume /opt/workspace:/usr/share/nginx/html \
-  custom/nginx:latest
-
-certbot certonly --webroot -d "$WEBSIT_NAME" -d "www.$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
-
-sed -i -r 's/#?;#//g' /etc/nginx/sites-enabled/"$WEBSIT_NAME".conf
-docker rm -f nginx
-docker run \
-  --name nginx \
-  --publish 80:80 \
-  --volume /etc/nginx:/etc/nginx \
-  --volume /run/nginx.pid:/run/nginx.pid \
-  --volume /var/log/nginx:/var/log/nginx \
-  --volume /etc/letsencrypt:/etc/letsencrypt \
-  --volume /var/www/_letsencrypt:/var/www/_letsencrypt \
-  --volume /opt/workspace:/usr/share/nginx/html \
-  custom/nginx:latest
-
-rm -rf /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
-docker rm -f nginx
-docker run \
-  -d \
-  --name nginx \
-  --publish 80:80 \
-  --volume /etc/nginx:/etc/nginx \
-  --volume /run/nginx.pid:/run/nginx.pid \
-  --volume /var/log/nginx:/var/log/nginx \
-  --volume /etc/letsencrypt:/etc/letsencrypt \
-  --volume /var/www/_letsencrypt:/var/www/_letsencrypt \
-  --volume /opt/workspace:/usr/share/nginx/html \
-  custom/nginx:latest
+source "${CURRENT_FOLDER}/software/nginx.sh ${WEBSIT_NAME}"
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
