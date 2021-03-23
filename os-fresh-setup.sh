@@ -50,6 +50,7 @@ echo "root hard nofile 60000" >>/etc/security/limits.conf
 echo "session required pam_limits.so" >>/etc/pam.d/common-session
 # after above command, run `ulimit -n` and `ulimit -Hn` to see the changes
 echo "Updated the file-max limits value"
+sudo chmod +x software/* hooks/*
 source "${CURRENT_FOLDER}/software/maven.sh"
 source "${CURRENT_FOLDER}/software/node.sh"
 source "${CURRENT_FOLDER}/software/nginx.sh ${WEBSIT_NAME}"

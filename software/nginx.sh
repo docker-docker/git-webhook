@@ -7,14 +7,36 @@ PCRE_VERSION="8.44"
 ZLIB_VERSION="1.2.11"
 OPENSSL_VERSION="1.1.1g"
 NGINX_SERVER_NAME="SeniorTesting"
+CURRENT_FOLDER=$(pwd)
 NGINX_FOLDER="/tmp/nginx"
 NGINX_MODULE_FOLDER="nginx-modules"
-CURRENT_FOLDER=$(pwd)
+DOMAIN_FILE="/etc/nginx/sites-enabled/example.com.conf"
 
-if [ -z "$1" ]; then
+# if not pass the domain name
+if [ -z "${WEBSIT_NAME}" ]; then
   echo -e "\nPlease call '$0 <website name>' to run this command!\n"
   exit 1
 fi
+# if the domain name is subdomain
+# shellcheck disable=SC2006
+domain_len=`echo "$WEBSIT_NAME" | python3 -c "print(len(input().split('.')))"`
+if [ "$domain_len" == 3 ]; then
+  # copy file
+  cp -rf "${CURRENT_FOLDER}"/nginx/sites-enabled/example.com.conf /etc/nginx/sites-enabled/
+  if [ -f "$DOMAIN_FILE" ]; then
+    sed -i "s/example.com/${WEBSIT_NAME}/g" "${DOMAIN_FILE}"
+    sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${DOMAIN_FILE}"
+    mv "${DOMAIN_FILE}" "/etc/nginx/sites-enabled/${WEBSIT_NAME}.conf"
+  fi
+  sudo nginx -t && sudo systemctl reload nginx
+
+  certbot certonly --webroot -d "$WEBSIT_NAME" --email alterhu2020@gmail.com -w /var/www/_letsencrypt -n --agree-tos --force-renewal
+  sed -i -r 's/#?;#//g' "/etc/nginx/sites-enabled/${WEBSIT_NAME}.conf"
+  sudo nginx -t && sudo systemctl reload nginx
+  #
+  exit 1
+fi
+
 sudo rm -rf /etc/nginx
 sudo apt update && sudo apt upgrade -y
 apt install build-essential -y
@@ -128,7 +150,7 @@ WantedBy=multi-user.target
 
 EOF
 
-sudo systemctl enable nginx.service && sudo systemctl start nginx.service
+sudo systemctl daemon-reload && sudo systemctl enable nginx.service && sudo systemctl start nginx.service
 
 # clear files
 sudo rm -rf ${NGINX_FOLDER}
@@ -143,11 +165,10 @@ openssl dhparam -out /etc/nginx/dhparam.pem 2048
 sudo mkdir -p /var/www/_letsencrypt
 sudo chown www-data /var/www/_letsencrypt
 
-FILE="/etc/nginx/sites-enabled/example.com.conf"
-if [ -f "$FILE" ]; then
-  sed -i "s/example.com/${WEBSIT_NAME}/g" "${FILE}"
-  sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${FILE}"
-  mv "${FILE}" "/etc/nginx/sites-enabled/${WEBSIT_NAME}.conf"
+if [ -f "$DOMAIN_FILE" ]; then
+  sed -i "s/example.com/${WEBSIT_NAME}/g" "${DOMAIN_FILE}"
+  sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${DOMAIN_FILE}"
+  mv "${DOMAIN_FILE}" "/etc/nginx/sites-enabled/${WEBSIT_NAME}.conf"
 fi
 
 sudo nginx -t && sudo systemctl reload nginx
