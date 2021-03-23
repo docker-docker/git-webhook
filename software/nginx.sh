@@ -24,6 +24,7 @@ if [ "$domain_len" == 3 ]; then
   # copy file
   cp -rf "${CURRENT_FOLDER}"/nginx/sites-enabled/example.com.conf /etc/nginx/sites-enabled/
   if [ -f "$DOMAIN_FILE" ]; then
+    sed -i "s/example.com www.example.com/${WEBSIT_NAME}/g" "${DOMAIN_FILE}"
     sed -i "s/example.com/${WEBSIT_NAME}/g" "${DOMAIN_FILE}"
     sed -i -r 's/(listen .*443)/\1;#/g; s/(ssl_(certificate|certificate_key|trusted_certificate) )/#;#\1/g' "${DOMAIN_FILE}"
     mv "${DOMAIN_FILE}" "/etc/nginx/sites-enabled/${WEBSIT_NAME}.conf"
