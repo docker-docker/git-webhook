@@ -132,7 +132,7 @@ sudo rm -rf /usr/local/nginx/*
 #================================================
 # copy the settings from nginxconfig.io
 sudo mkdir -p /etc/nginx
-cp * /etc/nginx/
+cp -rf nginx/* /etc/nginx/
 # init ssl
 cd /etc/nginx
 openssl dhparam -out /etc/nginx/dhparam.pem 2048

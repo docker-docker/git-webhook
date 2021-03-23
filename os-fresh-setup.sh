@@ -7,7 +7,7 @@ set -e
 #================================================
 SSH_PORT="28379"
 SSH_PASS="changeit"
-HOST_NAME="st_manager"
+HOST_NAME="st-manager"
 WEBSIT_NAME="seniortesting.club"
 CURRENT_FOLDER=$(pwd)
 CODE_WORKSPACE="/opt/workspace"
@@ -70,8 +70,31 @@ rm -f get-pip.py
 
 cd "${CURRENT_FOLDER}"
 pip install -r requirements.txt
-nohup python3 webhooks.py >>app.log 2>&1 &
+# nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"
+cat >/lib/systemd/system/githook.service <<EOF
+[Unit]
+Description=A Git webhook to integration git pull event
+After=syslog.target network.target remote-fs.target nss-lookup.target
+
+[Service]
+# Our service will notify systemd once it is up and running
+Type=notify
+ExecStart=/usr/bin/python3 /opt/workspace/git-webhook/webhooks.py
+# Disable Python's buffering of STDOUT and STDERR, so that output from the
+# service shows up immediately in systemd's logs
+Environment=PYTHONUNBUFFERED=1
+# Automatically restart the service if it crashes
+Restart=on-failure
+
+[Install]
+# Tell systemd to automatically start this service when the system boots
+# (assuming the service is enabled)
+WantedBy=default.target
+
+EOF
+
+sudo systemctl enable githook.service && sudo systemctl start githook.service
 #================================================
 # 3. sshd configuration
 ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
