@@ -12,7 +12,6 @@ WEBSIT_NAME="seniortesting.club"
 CURRENT_FOLDER=$(pwd)
 CODE_WORKSPACE="/opt/workspace"
 #================================================
-su -
 apt-get install sudo -y
 usermod -aG sudo root
 # 1. setup the host /etc/hostname , etc/hosts
