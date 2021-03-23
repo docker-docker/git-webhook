@@ -2,8 +2,10 @@
 # -*- coding: utf-8 -*-
 import hmac
 import logging
+import os
 import smtplib
 import ssl
+import threading
 from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -16,10 +18,38 @@ from tempfile import mkstemp
 
 import requests
 from flask import Flask, request, abort
-from sys import stderr, hexversion
+from sys import hexversion
 
-logging.basicConfig(stream=stderr)
+LOGGER = logging.getLogger(__name__)
+threading.stack_size(2 * 1024 * 1024)
+
+
+def setup_logging(app: Flask):
+    '''
+    logging
+    :param app:
+    :return:
+    '''
+    try:
+        logfile = os.path.join(os.path.dirname(__file__), 'logging.cfg')
+        exist_file = os.path.exists(logfile)
+        if exist_file:
+            log_dir = app.config.get('LOGGING_FOLDER')
+            if not os.path.exists(log_dir):
+                os.makedirs(log_dir)
+            today = datetime.date.today().strftime('%Y-%m-%d')
+            log_path = log_dir + '/service-githook-' + '%s.log' % (today)
+
+            logging.config.fileConfig(logfile, disable_existing_loggers=False, defaults={'logpath': log_path})
+            logging.info('project logging setup already......')
+    except Exception as e:
+        LOGGER.error('cannot find config file logging.cfg')
+        raise
+
+
 app = Flask(__name__)
+app.config['LOGGING_FOLDER'] = 'logs'
+setup_logging(app)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -32,6 +62,7 @@ def index():
 
     # Only POST is implemented
     if request.method != 'POST':
+        LOGGER.warning(f"Incorrect request method {request.method}, expected method: POST")
         abort(501)
 
     # Load config
@@ -51,7 +82,7 @@ def index():
             if src_ip in ip_network(valid_ip):
                 break
         else:
-            logging.error('IP {} not allowed'.format(
+            LOGGER.error('IP {} not allowed'.format(
                 src_ip
             ))
             abort(403)
@@ -62,10 +93,12 @@ def index():
         # Only SHA1 is supported
         header_signature = request.headers.get('X-Hub-Signature')
         if header_signature is None:
+            LOGGER.error(f"header_signature: X-Hub-Signature is None")
             abort(403)
 
         sha_name, signature = header_signature.split('=')
         if sha_name != 'sha1':
+            LOGGER.error(f"header_signature sha is not sha1")
             abort(501)
 
         # HMAC requires the key to be bytes, but data is string
@@ -74,24 +107,27 @@ def index():
         # Python prior to 2.7.7 does not have hmac.compare_digest
         if hexversion >= 0x020707F0:
             if not hmac.compare_digest(str(mac.hexdigest()), str(signature)):
+                LOGGER.error(f"header_signature is incorrect")
                 abort(403)
         else:
             # What compare_digest provides is protection against timing
             # attacks; we can live without this protection for a web-based
             # application
             if not str(mac.hexdigest()) == str(signature):
+                LOGGER.error(f"header_signature is incorrect")
                 abort(403)
 
     # Implement ping
     event = request.headers.get('X-GitHub-Event', 'ping')
     if event == 'ping':
+        LOGGER.info(f"ping call!")
         return dumps({'msg': 'ping'})
 
     # Gather data
     try:
         payload = request.get_json()
     except Exception as e:
-        logging.warning('Request parsing failed')
+        LOGGER.warning('Request parsing failed')
         abort(400)
 
     # Determining the branch is tricky, as it only appears for certain event
@@ -129,11 +165,11 @@ def index():
         'branch': branch,
         'event': event
     }
-    logging.info('Metadata:\n{}'.format(dumps(meta)))
+    LOGGER.info('Metadata:\n{}'.format(dumps(meta)))
 
     # Skip push-delete
     if event == 'push' and payload['deleted']:
-        logging.info('Skipping push-delete event for {}'.format(dumps(meta)))
+        LOGGER.info('Skipping push-delete event for {}'.format(dumps(meta)))
         return dumps({'status': 'skipped', 'msg': 'Skipping push-delete event!'})
 
     # Possible hooks
@@ -149,6 +185,7 @@ def index():
     # Check permissions
     scripts = [s for s in scripts if isfile(s) and access(s, X_OK)]
     if not scripts:
+        LOGGER.warning(f"hook script not found or have no access permission")
         return dumps({'status': 'nop', 'msg': 'hook script not found or have no access permission'})
 
     # Save payload to temporal file
@@ -174,7 +211,7 @@ def index():
 
         # Log errors if a hook failed
         if proc.returncode != 0:
-            logging.error('{} : {} \n{}'.format(
+            LOGGER.error('{} : {} \n{}'.format(
                 s, proc.returncode, stderr
             ))
 
@@ -186,7 +223,7 @@ def index():
         return dumps({'status': 'done'})
 
     output = dumps(ran, sort_keys=True, indent=4)
-    logging.info(output)
+    LOGGER.info(output)
     return output
 
 
