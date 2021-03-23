@@ -39,7 +39,6 @@ rm -rf /var/lib/apt/lists/*
 echo "Update the apt package mirror completed!"
 echo "en_US.UTF-8 UTF-8" >>/etc/locale.gen
 locale-gen en_US.UTF-8
-
 # 1.3 /etc/sysctl.conf
 echo "fs.file-max = 2147483584" >>/etc/sysctl.conf
 echo "* soft nofile 60000" >>/etc/security/limits.conf
@@ -53,6 +52,7 @@ echo "session required pam_limits.so" >>/etc/pam.d/common-session
 echo "Updated the file-max limits value"
 source "${CURRENT_FOLDER}/software/maven.sh"
 source "${CURRENT_FOLDER}/software/node.sh"
+source "${CURRENT_FOLDER}/software/nginx.sh ${WEBSIT_NAME}"
 #================================================
 # 2. setup the git webhook in current manager machine
 wget -O get-pip.py https://github.com/pypa/get-pip/raw/b60e2320d9e8d02348525bd74e871e466afdf77c/get-pip.py
@@ -79,22 +79,23 @@ After=syslog.target network.target remote-fs.target nss-lookup.target
 
 [Service]
 # Our service will notify systemd once it is up and running
-Type=notify
+Type=simple
 ExecStart=/usr/bin/python3 /opt/workspace/git-webhook/webhooks.py
+StandardInput=tty-force
 # Disable Python's buffering of STDOUT and STDERR, so that output from the
 # service shows up immediately in systemd's logs
 Environment=PYTHONUNBUFFERED=1
 # Automatically restart the service if it crashes
-Restart=on-failure
+Restart=always
 
 [Install]
 # Tell systemd to automatically start this service when the system boots
 # (assuming the service is enabled)
-WantedBy=default.target
+WantedBy=multi-user.target
 
 EOF
 
-sudo systemctl enable githook.service && sudo systemctl start githook.service
+sudo systemctl daemon-reload && sudo systemctl enable githook.service && sudo systemctl start githook.service
 #================================================
 # 3. sshd configuration
 ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
@@ -133,9 +134,6 @@ chmod +x /usr/local/bin/docker-compose
 echo "Docker compose installed"
 # 4.2 docker swarm
 #docker swarm init
-#================================================
-# 5. setup the nginx server quickly
-source "${CURRENT_FOLDER}/software/nginx.sh ${WEBSIT_NAME}"
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"

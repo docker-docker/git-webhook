@@ -1,6 +1,6 @@
 #!/bin/bash
 #================================================
-# borrow from:
+# script borrow from:
 # java: https://github.com/AdoptOpenJDK/openjdk-docker/blob/master/11/jdk/debian/Dockerfile.hotspot.releases.full
 # maven: https://github.com/carlossg/docker-maven/blob/b243010db790a1ab8f6a43d26ae86a76cba86b55/adoptopenjdk-11/Dockerfile
 #======================JDK==========================

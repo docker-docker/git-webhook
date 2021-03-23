@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import hmac
 import logging
 import smtplib
 import ssl
-from email.mime.text import MIMEText
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
-from sys import stderr, hexversion
-import hmac
+from email.mime.text import MIMEText
+from ipaddress import ip_address, ip_network
 from json import loads, dumps
-from subprocess import Popen, PIPE
-from tempfile import mkstemp
 from os import access, X_OK, remove, fdopen
 from os.path import isfile, abspath, normpath, dirname, join, basename
+from subprocess import Popen, PIPE
+from tempfile import mkstemp
+
 import requests
-from ipaddress import ip_address, ip_network
 from flask import Flask, request, abort
+from sys import stderr, hexversion
 
 logging.basicConfig(stream=stderr)
 app = Flask(__name__)
@@ -186,6 +188,11 @@ def index():
     output = dumps(ran, sort_keys=True, indent=4)
     logging.info(output)
     return output
+
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return {'msg': 'ok', 'timestamp': datetime.now().strftime('%m/%d/%Y, %H:%M:%S')}
 
 
 def send_email(smtp_server="smtp.gmail.com",

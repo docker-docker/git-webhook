@@ -1,4 +1,8 @@
 #!/bin/bash
+#================================================
+# script borrow from:
+# node 15: <https://github.com/nodejs/docker-node/blob/main/15/buster/Dockerfile>
+#======================node==========================
 set -eux
 NODE_VERSION="15.11.0"
 YARN_VERSION="1.22.5"
