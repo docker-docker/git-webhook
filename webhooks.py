@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import hmac
-import logging
+import logging.config
 import os
 import smtplib
 import ssl
