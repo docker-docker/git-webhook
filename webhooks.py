@@ -37,7 +37,7 @@ def setup_logging(app: Flask):
             log_dir = app.config.get('LOGGING_FOLDER')
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
-            today = datetime.date.today().strftime('%Y-%m-%d')
+            today = datetime.now().strftime('%Y-%m-%d')
             log_path = log_dir + '/service-githook-' + '%s.log' % (today)
 
             logging.config.fileConfig(logfile, disable_existing_loggers=False, defaults={'logpath': log_path})
