@@ -9,10 +9,11 @@ OPENSSL_VERSION="1.1.1g"
 NGINX_SERVER_NAME="SeniorTesting"
 NGINX_FOLDER="/tmp/nginx"
 NGINX_MODULE_FOLDER="nginx-modules"
+CURRENT_FOLDER=$(pwd)
 
 if [ -z "$1" ]; then
-    echo -e "\nPlease call '$0 <website name>' to run this command!\n"
-    exit 1
+  echo -e "\nPlease call '$0 <website name>' to run this command!\n"
+  exit 1
 fi
 sudo rm -rf /etc/nginx
 sudo apt update && sudo apt upgrade -y
@@ -41,10 +42,11 @@ wget https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz && tar zxf nginx-$
 # modify nginx default settings
 cd ${NGINX_FOLDER}
 sed -i -r "s/Server: nginx/Server: ${NGINX_SERVER_NAME}/" nginx-${NGINX_VERSION}/src/http/ngx_http_header_filter_module.c
+sed -i -r "s/Server: \"/Server: ${NGINX_SERVER_NAME}\"/" nginx-${NGINX_VERSION}/src/http/ngx_http_header_filter_module.c
 sed -i -r "s/nginx\//${NGINX_SERVER_NAME}\//" nginx-${NGINX_VERSION}/src/core/nginx.h
 sed -i -r "s/<hr><center>nginx<\/center>/<hr><center>${NGINX_SERVER_NAME}<\/center>/" nginx-${NGINX_VERSION}/src/http/ngx_http_special_response.c
 # build the source
-cd nginx-${NGINX_VERSION}
+cd ${NGINX_FOLDER}/nginx-${NGINX_VERSION}
 ./configure --prefix=/usr/share/nginx \
 --sbin-path=/usr/sbin/nginx \
 --modules-path=/usr/lib/nginx/modules \
@@ -132,7 +134,7 @@ sudo rm -rf /usr/local/nginx/*
 #================================================
 # copy the settings from nginxconfig.io
 sudo mkdir -p /etc/nginx
-cp -rf nginx/* /etc/nginx/
+cp -rf ${CURRENT_FOLDER}/nginx/* /etc/nginx/
 # init ssl
 cd /etc/nginx
 openssl dhparam -out /etc/nginx/dhparam.pem 2048
