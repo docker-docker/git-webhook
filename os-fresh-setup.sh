@@ -99,11 +99,14 @@ EOF
 sudo systemctl daemon-reload && sudo systemctl enable githook.service && sudo systemctl start githook.service
 #================================================
 # 3. sshd configuration
-ssh-keygen -t rsa -N "$SSH_PASS" -f ~/.ssh/id_rsa
+ssh-keygen -t rsa -b 4096 -C "alterhu2020@gmail.com" -N "$SSH_PASS" -f ~/.ssh/id_rsa
 cat ~/.ssh/id_rsa.pub >>~/.ssh/authorized_keys
 chown -R root:root ~/.ssh
 chmod -R 700 ~/.ssh
 chmod -R 600 ~/.ssh/authorized_keys
+# add the key into github page: https://github.com/settings/keys
+# "Key is invalid. You must supply a key in OpenSSH public key format" if this error please use cat to copied into console
+# cat ~/.ssh/id_rsa.pub
 
 sed -i -r 's/(Port*)/#\1/g' /etc/ssh/sshd_config
 sed -i -r "/^#Port.*/a Port ${SSH_PORT}" /etc/ssh/sshd_config

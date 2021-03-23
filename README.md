@@ -24,7 +24,7 @@ Run as following script:
 $ apt install -y git
 $ mkdir -p /opt/workspace
 $ cd /opt/workspace
-$ git clone https://github.com/docker-docker/git-webhook.git
+$ git clone git@github.com:docker-docker/git-webhook.git
 $ cd git-webhook
 $ chmod +x os-fresh-setup.sh software/* hooks/*
 $ ./os-fresh-setup.sh
