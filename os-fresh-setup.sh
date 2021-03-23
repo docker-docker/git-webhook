@@ -86,7 +86,7 @@ StandardInput=tty-force
 # service shows up immediately in systemd's logs
 Environment=PYTHONUNBUFFERED=1
 # Automatically restart the service if it crashes
-Restart=always
+Restart=on-failure
 
 [Install]
 # Tell systemd to automatically start this service when the system boots
