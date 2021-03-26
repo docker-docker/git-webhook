@@ -183,9 +183,9 @@ def index():
     scripts.append(join(hooks, 'all.py'))
 
     # Check permissions
-    scripts = [s for s in scripts if isfile(s) and access(s, X_OK)]
-    if not scripts:
-        msg=f"hook script {scripts} not found or have no access permission"
+    callable_scripts = [s for s in scripts if isfile(s) and access(s, X_OK)]
+    if not callable_scripts:
+        msg=f"hook script {callable_scripts} not found or have no access permission for scripts: {scripts}"
         LOGGER.warning(msg)
         return dumps({'status': 'nop', 'msg': msg})
 
@@ -196,7 +196,7 @@ def index():
 
     # Run scripts
     ran = {}
-    for s in scripts:
+    for s in callable_scripts:
 
         proc = Popen(
             [s, tmp_file, branch, event],
