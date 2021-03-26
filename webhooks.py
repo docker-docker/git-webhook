@@ -38,7 +38,7 @@ def setup_logging(app: Flask):
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
             today = datetime.now().strftime('%Y-%m-%d')
-            log_path = log_dir + '/service-githook-' + '%s.log' % (today)
+            log_path = log_dir + '/githook-' + '%s.log' % (today)
 
             logging.config.fileConfig(logfile, disable_existing_loggers=False, defaults={'logpath': log_path})
             logging.info('project logging setup already......')
@@ -185,8 +185,9 @@ def index():
     # Check permissions
     scripts = [s for s in scripts if isfile(s) and access(s, X_OK)]
     if not scripts:
-        LOGGER.warning(f"hook script not found or have no access permission")
-        return dumps({'status': 'nop', 'msg': 'hook script not found or have no access permission'})
+        msg=f"hook script {scripts} not found or have no access permission"
+        LOGGER.warning(msg)
+        return dumps({'status': 'nop', 'msg': msg})
 
     # Save payload to temporal file
     os_fd, tmp_file = mkstemp()
