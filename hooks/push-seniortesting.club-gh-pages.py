@@ -3,6 +3,7 @@
 # File: push-myrepo-main
 import json
 import os
+import shutil
 import subprocess
 
 import sys
@@ -24,13 +25,14 @@ print(f'file_name: {current_file_name}, branch: {branch_name}, event: {event}')
 # Git pull the latest code repository
 code_location = os.path.join(sourcecode_root_location, name)
 if os.path.exists(code_location):
-    os.chdir(code_location)
-    subprocess.run(['git', 'fetch', '--all'], capture_output=True)
-    subprocess.run(['git', 'reset', '--hard', f'origin/{branch_name}'], capture_output=True)
-    print(f'git fetch -all completed successfully')
-else:
-    os.makedirs(sourcecode_root_location, exist_ok=True)
-    os.chdir(sourcecode_root_location)
-    subprocess.run(['git', 'clone', '-b', branch_name, git_url], capture_output=True)
-    print(f'git clone -b {branch_name} {git_url} completed successfully')
+    shutil.rmtree(code_location, ignore_errors=True)
+    # os.chdir(code_location)
+    # subprocess.run(['git', 'fetch', '--all'], capture_output=True)
+    # subprocess.run(['git', 'reset', '--hard', f'origin/{branch_name}'], capture_output=True)
+    # print(f'git fetch -all completed successfully')
+
+os.makedirs(sourcecode_root_location, exist_ok=True)
+os.chdir(sourcecode_root_location)
+subprocess.run(['git', 'clone', '-b', branch_name, git_url], capture_output=True)
+print(f'git clone -b {branch_name} {git_url} completed successfully')
 # send the email notification
