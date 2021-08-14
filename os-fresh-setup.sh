@@ -34,7 +34,7 @@ echo "TimeZone changed to ${TIMEZONE}"
 #  echo "deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security/ buster/updates main contrib non-free" >>/etc/apt/sources.list
 
 apt-get update &&
-  apt-get -y install ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends apt-utils git unzip screen certbot
+  apt-get -y install ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends apt-utils locales git unzip screen certbot
 rm -rf /var/lib/apt/lists/*
 echo "Update the apt package mirror completed!"
 echo "en_US.UTF-8 UTF-8" >>/etc/locale.gen
