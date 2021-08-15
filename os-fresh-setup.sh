@@ -48,8 +48,8 @@ echo "root hard nofile 60000" >>/etc/security/limits.conf
 echo "session required pam_limits.so" >>/etc/pam.d/common-session
 # after above command, run `ulimit -n` and `ulimit -Hn` to see the changes
 echo "Updated the file-max limits value"
+sudo chmod +x software/*
 if [ ! -z "${FLAG}" ]; then
-  sudo chmod +x software/*
   source "${CURRENT_FOLDER}/software/maven.sh"
   source "${CURRENT_FOLDER}/software/node.sh"
   source "${CURRENT_FOLDER}/software/nginx.sh"
@@ -79,3 +79,4 @@ fi
 #================================================
 # at last, clear the memory
 sh -c "echo 3 > /proc/sys/vm/drop_caches"
+echo "Completed the os setup script successfully!"
