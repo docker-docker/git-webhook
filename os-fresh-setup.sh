@@ -7,7 +7,7 @@ set -e
 #================================================
 FLAG="$1"
 HOST_NAME="st-manager"
-CURRENT_FOLDER=$(PWD)
+CURRENT_FOLDER=$(pwd)
 CODE_WORKSPACE="/opt/workspace"
 #================================================
 apt-get install sudo -y
