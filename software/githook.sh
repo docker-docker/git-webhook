@@ -17,6 +17,7 @@ find /usr/local -depth \
 rm -f get-pip.py
 
 echo "Project folder is: ${PROJECT_FOLDER}"
+cd ${PROJECT_FOLDER}
 pip install -r requirements.txt
 # nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"
