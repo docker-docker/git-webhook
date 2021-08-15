@@ -184,3 +184,7 @@ sudo nginx -t && sudo systemctl reload nginx
 echo -e '#!/bin/bash\nnginx -t && systemctl reload nginx' | sudo tee /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 sudo chmod a+x /etc/letsencrypt/renewal-hooks/post/nginx-reload.sh
 sudo nginx -t && sudo systemctl reload nginx
+# setup nginx www folder
+sudo mkdir -p /www
+sudo chmod -R 777 /www
+sudo chown -R www-data:www-data /www
