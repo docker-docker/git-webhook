@@ -1,7 +1,8 @@
 #!/bin/bash
 set -eux
 # nginx settings
-WEBSIT_NAME="$1"
+# WEBSIT_NAME="$1"
+WEBSIT_NAME="seniortesting.club"
 NGINX_VERSION="1.19.0"
 PCRE_VERSION="8.44"
 ZLIB_VERSION="1.2.11"
