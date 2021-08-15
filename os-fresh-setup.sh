@@ -54,7 +54,7 @@ if [ ! -z "${FLAG}" ]; then
   source "${CURRENT_FOLDER}/software/node.sh"
   source "${CURRENT_FOLDER}/software/nginx.sh"
   source "${CURRENT_FOLDER}/software/docker.sh"
-  source "${CURRENT_FOLDER}/software/webhooks.sh"
+  source "${CURRENT_FOLDER}/software/githook.sh"
 fi
 #================================================
 # 3. sshd configuration

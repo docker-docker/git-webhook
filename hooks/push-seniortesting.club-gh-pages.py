@@ -8,7 +8,7 @@ import subprocess
 
 import sys
 
-sourcecode_root_location = "/opt/workspace"
+sourcecode_root_location = "/www"
 # Parse the git event parameter
 current_file_name = sys.argv[0]
 tmp_payload_file = sys.argv[1]
