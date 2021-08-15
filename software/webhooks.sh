@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+PROJECT_FOLDER=$(dirname $PWD)
 #================================================
 # 2. setup the git webhook in current manager machine
 wget -O get-pip.py https://github.com/pypa/get-pip/raw/b60e2320d9e8d02348525bd74e871e466afdf77c/get-pip.py
@@ -15,7 +16,7 @@ find /usr/local -depth \
   \) -exec rm -rf '{}' +
 rm -f get-pip.py
 
-cd "${CURRENT_FOLDER}"
+cd "Project folder is: ${PROJECT_FOLDER}"
 pip install -r requirements.txt
 # nohup python3 webhooks.py >>app.log 2>&1 &
 echo "git webhook setup completed!"

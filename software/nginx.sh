@@ -8,7 +8,7 @@ PCRE_VERSION="8.44"
 ZLIB_VERSION="1.2.11"
 OPENSSL_VERSION="1.1.1g"
 NGINX_SERVER_NAME="SeniorTesting"
-CURRENT_FOLDER=$(pwd)
+CURRENT_FOLDER=$(PWD)
 NGINX_FOLDER="/tmp/nginx"
 NGINX_MODULE_FOLDER="nginx-modules"
 DOMAIN_FILE="/etc/nginx/sites-enabled/example.com.conf"
@@ -160,7 +160,7 @@ sudo rm -rf /usr/local/nginx/*
 #================================================
 # copy the settings from nginxconfig.io
 sudo mkdir -p /etc/nginx
-cp -rf ${CURRENT_FOLDER}/software/nginx/* /etc/nginx/
+cp -rf ${CURRENT_FOLDER}/nginx/* /etc/nginx/
 # init ssl
 cd /etc/nginx
 openssl dhparam -out /etc/nginx/dhparam.pem 2048

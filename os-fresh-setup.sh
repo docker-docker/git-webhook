@@ -7,7 +7,7 @@ set -e
 #================================================
 FLAG="$1"
 HOST_NAME="st-manager"
-CURRENT_FOLDER=$(pwd)
+CURRENT_FOLDER=$(PWD)
 CODE_WORKSPACE="/opt/workspace"
 #================================================
 apt-get install sudo -y
@@ -48,7 +48,7 @@ echo "root hard nofile 60000" >>/etc/security/limits.conf
 echo "session required pam_limits.so" >>/etc/pam.d/common-session
 # after above command, run `ulimit -n` and `ulimit -Hn` to see the changes
 echo "Updated the file-max limits value"
-if [ -z "${FLAG}" ]; then
+if [ ! -z "${FLAG}" ]; then
   sudo chmod +x software/*
   source "${CURRENT_FOLDER}/software/maven.sh"
   source "${CURRENT_FOLDER}/software/node.sh"
