@@ -33,16 +33,14 @@
     </hudson.model.AllView>
     <listView>
       <owner class="hudson" reference="../../.."/>
-      <name>git-webhook</name>
+      <name>nuxt-docker</name>
       <filterExecutors>false</filterExecutors>
       <filterQueue>false</filterQueue>
       <properties class="hudson.model.View$PropertyList"/>
       <jobNames>
         <comparator class="hudson.util.CaseInsensitiveComparator"/>
       </jobNames>
-      <jobFilters>
-        <org.jenkinsci.plugins.github__branch__source.GitHubBranchFilter plugin="github-branch-source@2.11.3"/>
-      </jobFilters>
+      <jobFilters/>
       <columns>
         <hudson.views.StatusColumn/>
         <hudson.views.WeatherColumn/>
@@ -51,8 +49,8 @@
         <hudson.views.LastFailureColumn/>
         <hudson.views.LastDurationColumn/>
         <hudson.views.BuildButtonColumn/>
-        <hudson.plugins.git.GitBranchSpecifierColumn plugin="git@4.9.0"/>
       </columns>
+      <includeRegex>nuxt-docker*</includeRegex>
       <recurse>false</recurse>
     </listView>
   </views>
