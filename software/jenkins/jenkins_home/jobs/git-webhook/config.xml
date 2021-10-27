@@ -1,9 +1,30 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject plugin="workflow-multibranch@2.26">
   <actions/>
-  <description></description>
+  <description>webhook for git </description>
   <displayName>git-webhook</displayName>
-  <properties/>
+  <properties>
+    <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@6.16">
+      <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
+        <entry>
+          <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.6.1">
+            <specifications/>
+          </com.cloudbees.plugins.credentials.domains.Domain>
+          <java.util.concurrent.CopyOnWriteArrayList>
+            <com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey plugin="ssh-credentials@1.19">
+              <id>github</id>
+              <description></description>
+              <username>alterhu2020@gmail.com</username>
+              <usernameSecret>false</usernameSecret>
+              <privateKeySource class="com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey$DirectEntryPrivateKeySource">
+                <privateKey>{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}</privateKey>
+              </privateKeySource>
+            </com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey>
+          </java.util.concurrent.CopyOnWriteArrayList>
+        </entry>
+      </domainCredentialsMap>
+    </com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty>
+  </properties>
   <folderViews class="jenkins.branch.MultiBranchProjectViewHolder" plugin="branch-api@2.7.0">
     <owner class="org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject" reference="../.."/>
   </folderViews>
@@ -24,13 +45,12 @@
         <source class="org.jenkinsci.plugins.github_branch_source.GitHubSCMSource" plugin="github-branch-source@2.11.3">
           <id>07b0dc77-0536-434f-beec-d5ac3e0d8b97</id>
           <apiUri>https://api.github.com</apiUri>
-          <credentialsId>github auth user</credentialsId>
           <repoOwner>docker-docker</repoOwner>
           <repository>git-webhook</repository>
           <repositoryUrl>https://github.com/docker-docker/git-webhook.git</repositoryUrl>
           <traits>
             <org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
-              <strategyId>2</strategyId>
+              <strategyId>3</strategyId>
             </org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
             <org.jenkinsci.plugins.github__branch__source.OriginPullRequestDiscoveryTrait>
               <strategyId>2</strategyId>
