@@ -1,5 +1,0 @@
-Started by user [8mha:////4AD/p4EJl2NH9BPdYEtXX/wQYuSN7S26qPbZGcuiuNFuAAAAlx+LCAAAAAAAAP9b85aBtbiIQTGjNKU4P08vOT+vOD8nVc83PyU1x6OyILUoJzMv2y+/JJUBAhiZGBgqihhk0NSjKDWzXb3RdlLBUSYGJk8GtpzUvPSSDB8G5tKinBIGIZ+sxLJE/ZzEvHT94JKizLx0a6BxUmjGOUNodHsLgAy2EgZu/dLi1CL9xJTczDwA9svhPMAAAAA=[0mWalter
-Lightweight checkout support not available, falling back to full checkout.
-Checking out hudson.scm.NullSCM into /var/jenkins_home/workspace/nuxt-docker@script to read Jenkinsfile
-ERROR: /var/jenkins_home/workspace/nuxt-docker@script/Jenkinsfile not found
-Finished: FAILURE
